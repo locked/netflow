@@ -5,7 +5,7 @@ $m = new MongoClient();
 $db = $m->selectDB('network');
 $c = new MongoCollection($db, 'flows');
 
-$q = array();
+$q = array("ts"=>array('$gt'=>intval($_REQUEST["start_ts"])));
 $cursor = $c->find($q);
 $lns = array();
 $max = 0;

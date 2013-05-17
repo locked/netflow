@@ -43,10 +43,23 @@ body {
 		<?php
 		$protocols = array("ALL", "TCP", "UDP");
 		$protocol = $_REQUEST["protocol"]!=""?$_REQUEST["protocol"]:"ALL";
+		
+		$start_tss = array(
+			300=>"last 5 minutes",
+			1440=>"last hour",
+			86400=>"last 24 hours",
+			86400*7=>"last week",
+		);
+		$start_ts = time() - ($_REQUEST["start_ts"]!=""?$_REQUEST["start_ts"]:300);
 		?>
 		<select name="protocol">
 			<?php foreach($protocols as $p): ?>
-			<option<?= $p==$protocol?" selected":"" ?>><?= $p ?></option>
+			<option<?= $p==$protocol?" selected":"" ?>><?= $p; ?></option>
+			<?php endforeach; ?>
+		</select>
+		<select name="start_ts">
+			<?php foreach($start_tss as $s=>$st): ?>
+			<option<?= $s==$_REQUEST["start_ts"]?" selected":"" ?> value="<?= $s; ?>"><?= $st; ?></option>
 			<?php endforeach; ?>
 		</select>
 		<button class="btn" style="vertical-align:top;">Update</button>
@@ -57,32 +70,13 @@ body {
     </div> <!-- /container -->
 
 <script>
-function drawCurve(d) {
-        var slope = Math.atan2((+d3.select('#circle' + d.target).attr("cy") - d3.select('#circle' + d.source).attr("cy")), (+d3.select('#circle' + d.target).attr("cx") - d3.select('#circle' + d.source).attr("cx")));
-        var slopePlus90 = Math.atan2((+d3.select('#circle' + d.target).attr("cy") - d3.select('#circle' + d.source).attr("cy")), (+d3.select('#circle' + d.target).attr("cx") - d3.select('#circle' + d.source).attr("cx"))) + (Math.PI / 2);
-        var sourceX = +d3.select('#circle' + d.source).attr("cx");
-        var sourceY = +d3.select('#circle' + d.source).attr("cy");
-        var targetX = +d3.select('#circle' + d.target).attr("cx");
-        var targetY = +d3.select('#circle' + d.target).attr("cy");
-
-        var arrowOffset = 20;
-        var points = [];
-points.push([sourceX + radius * Math.cos(slope) - strength_scale(d.strength) * Math.cos(slopePlus90), sourceY + radius * Math.sin(slope) - strength_scale(d.strength) * Math.sin(slopePlus90)]);
-        points.push([sourceX + radius * Math.cos(slope), sourceY + radius * Math.sin(slope)]);
-        points.push([targetX - radius * Math.cos(slope), targetY - radius * Math.sin(slope)]);
-        points.push([targetX - (radius + arrowOffset) * Math.cos(slope) - strength_scale(d.strength + (arrowOffset / 2)) * Math.cos(slopePlus90), targetY - (radius + arrowOffset) * Math.sin(slope) - strength_scale(d.strength + (arrowOffset / 2)) * Math.sin(slopePlus90)]);
-        points.push([targetX - (radius + arrowOffset) * Math.cos(slope) - strength_scale(d.strength) * Math.cos(slopePlus90), targetY - (radius + arrowOffset) * Math.sin(slope) - strength_scale(d.strength) * Math.sin(slopePlus90)]);
-        return d3LineLinear(points) + "Z";
-}
-
-
 var width = 900,
     height = 500;
 var radius = 5;
 var linkDistance = 180;
-var charge = 480;
+var charge = 600;
 
-var data_url = "<?= "network.php?protocol=".$protocol; ?>";
+var data_url = "<?= "network.php?protocol=".$protocol."&start_ts=".$start_ts; ?>";
 
 var color = d3.scale.category20();
 
@@ -158,19 +152,17 @@ d3.json(data_url, function(json) {
       .text(function(d) { return d.name });
 
   force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
     link.attr("d", function(d) {
 	  var dx = d.target.x - d.source.x,
 		dy = d.target.y - d.source.y,
 		dr = Math.sqrt(dx * dx + dy * dy);
 	  return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
     });
-  
-    /*
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-	*/
 	
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
   });

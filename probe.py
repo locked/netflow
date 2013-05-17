@@ -22,13 +22,17 @@ def find_zone(ip):
 	return 'default'
 
 
+
 class Main:
 	agg = {}
 
 	def __init__(self, options):
 		self.options = options
 		self.db_connect()
+		self.lock = threading.Lock()
 
+
+	# DB
 	def db_connect(self):
 		try:
 			self.connection = Connection(self.options.server, 27017)
@@ -38,24 +42,48 @@ class Main:
 			print "Connection error [%s]" % str(e)
 
 	def db_insert(self, doc):
-		self.flows.insert(doc)
+		try:
+			si = self.connection.server_info()
+			#print "Server Info [%s]" % str(si)
+		except:
+			self.db_connect()
+		try:
+			self.flows.insert(doc)
+		except Exception as e:
+			print "Insert error [%s]" % str(e)
+
 
 	# Save aggragated data to DB
-	def dump_agg(self):
+	def dump(self):
 		if self.agg:
-			msg = {'ts':int(time.time()), 'data':self.agg}
-			print msg
-			for key, vals in self.agg.items():
-				keys = key.split("-")
-				doc = {'ts':int(time.time()), 'src':keys[0], 'dst':keys[1], 'vals':vals, 'sum':sum([v for k,v in vals.items()])}
-				self.db_insert(doc)
-			self.agg = {}
-		t = threading.Timer(5.0, self.dump_agg)
+			self.lock.acquire()
+			try:
+				msg = {'ts':int(time.time()), 'data':self.agg}
+				print msg
+				tosave_docs = []
+				for key, vals in self.agg.items():
+					keys = key.split("-")
+					doc = {'ts':int(time.time()), 'src':keys[0], 'dst':keys[1], 'vals':vals, 'sum':sum([v for k,v in vals.items()])}
+					tosave_docs.append(doc)
+				self.agg = {}
+			except Exception as e:
+				print "Error in dump(): [%s]" % str(e)
+			finally:
+				self.lock.release()
+			# Insert in DB after lock release
+			try:
+				for doc in tosave_docs:
+					self.db_insert(doc)
+			except Exception as e:
+				print "Error while saving data: [%s]" % str(e)
+		t = threading.Timer(5.0, self.dump)
 		t.daemon = True
 		t.start()
 
+
+	# Network listening
 	def go(self):
-		self.dump_agg()
+		self.dump()
 		try:
 			pc = pcap.pcap(name=self.options.iface)
 		except Exception as e:
@@ -82,9 +110,16 @@ class Main:
 				#print "%d: %s(%s) => %s(%s) [%d] [%s]" % (int(ts), src, src_zone, dst, dst_zone, size, proto)
 
 				key = (src_zone if src_zone=="default" else src) + "-" + (dst_zone if dst_zone=="default" else dst)
-				if key not in self.agg: self.agg[key] = {}
-				if proto not in self.agg: self.agg[key][proto] = 0
-				self.agg[key][proto] += size
+				
+				self.lock.acquire()
+				try:
+					if key not in self.agg: self.agg[key] = {}
+					if proto not in self.agg: self.agg[key][proto] = 0
+					self.agg[key][proto] += size
+				except Exception as e:
+					print "Error in go(): [%s]" % str(e)
+				finally:
+					self.lock.release()
 
 
 if __name__=='__main__':
@@ -96,4 +131,3 @@ if __name__=='__main__':
 
     m = Main(options)
     m.go()
-
