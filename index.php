@@ -41,7 +41,7 @@ body {
 
 		<form method="GET">
 		<?php
-		$protocols = array("ALL", "TCP", "UDP");
+		$protocols = array("ALL", "TCP", "UDP", "IPv6");
 		$protocol = $_REQUEST["protocol"]!=""?$_REQUEST["protocol"]:"ALL";
 		
 		$start_tss = array(
