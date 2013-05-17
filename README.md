@@ -1,6 +1,8 @@
 netflow
 =======
 
+Very simple network flow aggregator. Run a probe on each of your network and visualize the flows :)
+
 Requirements
 ------------
 
