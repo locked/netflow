@@ -30,6 +30,7 @@ class Main:
 		self.options = options
 		self.db_connect()
 		self.lock = threading.Lock()
+		self.local_ip = self.get_ip()
 
 
 	# DB
@@ -80,6 +81,10 @@ class Main:
 		t.daemon = True
 		t.start()
 
+	def get_ip(self):
+		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
+		s.connect(('google.com', 0)) 
+		return s.getsockname()[0]
 
 	# Network listening
 	def go(self):
@@ -89,7 +94,14 @@ class Main:
 		except Exception as e:
 			print str(e)
 			return False
-		pc.setfilter(self.options.filter)
+		filters = []
+		if self.options.mode=="local":
+			filters.append("(src %s or dst %s)" % (self.local_ip, self.local_ip))
+		if self.options.filter<>"":
+			filters.append(self.options.filter)
+		filter_str = " and ".join(filters)
+		print "Start listening with filter [%s]" % filter_str
+		pc.setfilter(filter_str)
 		for ts, pkt in pc:
 			p = dpkt.ethernet.Ethernet(pkt)
 			ip = p.data
@@ -123,11 +135,12 @@ class Main:
 
 
 if __name__=='__main__':
-    parser = OptionParser()
-    parser.add_option("-i", "--iface", dest="iface", default="eth0", help="Network interface")
-    parser.add_option("-f", "--filter", dest="filter", default="", help="Filter string")
-    parser.add_option("-s", "--server", dest="server", default="localhost", help="Database server address")
-    (options, args) = parser.parse_args()
+	parser = OptionParser()
+	parser.add_option("-i", "--iface", dest="iface", default="eth0", help="Network interface (eth0/wlan0/...)")
+	parser.add_option("-f", "--filter", dest="filter", default="", help="Filter string")
+	parser.add_option("-s", "--server", dest="server", default="localhost", help="Database server address")
+	parser.add_option("-m", "--mode", dest="mode", default="full", help="Mode (full/local)")
+	(options, args) = parser.parse_args()
 
-    m = Main(options)
-    m.go()
+	m = Main(options)
+	m.go()
