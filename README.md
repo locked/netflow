@@ -1,7 +1,10 @@
 netflow
 =======
 
-Very simple network flow aggregator. Run a probe on each of your network and visualize the flows :)
+Very simple network flow aggregator. Run a probe on each of your network and visualize TCP and/or UDP flows :)
+
+![Alt text](/netflow.png "screen")
+
 
 Requirements
 ------------
