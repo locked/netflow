@@ -20,6 +20,5 @@ For the frontend:
 Installation
 ------------
 
-Run the probe on all server:
-
-python probe.py [-i<interface>] [-s<mongodb server>] [-f<pcap filter>]
+- Run the probe on all server: python probe.py [-i&lt;interface&gt;] [-s&lt;mongodb server&gt;] [-f&lt;pcap filter&gt;]
+- Configure apache/nginx/whatever to access the frontend 'index.php' file.
