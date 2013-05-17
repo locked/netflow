@@ -11,12 +11,9 @@ body {
   stroke: #000;
   stroke-width: 1.5px;
 }
-/*
-.link {
-  stroke: #ccc;
+.link, .marker {
   stroke-opacity: .6;
 }
-*/
 .node text {
   pointer-events: none;
   font: 10px sans-serif;
@@ -80,7 +77,7 @@ points.push([sourceX + radius * Math.cos(slope) - strength_scale(d.strength) * M
 
 
 var width = 900,
-    height = 700;
+    height = 500;
 var radius = 5;
 var linkDistance = 180;
 var charge = 480;
@@ -114,7 +111,8 @@ svg.append("svg:defs").selectAll("marker")
     .attr("orient", "auto")
   .append("svg:path")
     .attr("d", "M0,-5L10,0L0,5")
-    .attr("fill", function(d) { return d=="src-dst"?"#FF0000":"#0000FF" });
+    .attr("fill", function(d) { return d=="src-dst"?"#FF0000":"#0000FF" })
+    .attr("fill-opacity", "0.8");
 
 
 d3.json(data_url, function(json) {

@@ -38,7 +38,19 @@ foreach ($cursor as $doc) {
 $nodes = array();
 $i = 0;
 foreach($hosts as $host) {
-	$group = substr($host, 0, 9)=="192.168.2"?2:1;
+	switch(substr($host, 0, 9)) {
+	case "192.168.2":
+		$group = 4;
+	break;
+	case "192.168.0":
+		$group = 3;
+	break;
+	case "outside":
+		$group = 2;
+	break;
+	default:
+		$group = 1;
+	}
 	$nodes[] = array("name"=>$host, "group"=>$group);
 	$rnodes[$host] = $i++;
 }
