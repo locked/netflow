@@ -6,6 +6,12 @@ Very simple network flow aggregator & visualization tool. Run a probe on each of
 ![Alt text](/netflow.png "screen")
 
 
+Live Demo
+---------
+
+http://php.lunasys.fr/netflow/
+
+
 Requirements
 ------------
 
@@ -21,6 +27,7 @@ For the probe:
 For the frontend:
 
 - php-mongo (pecl install mongo)
+
 
 Installation
 ------------
