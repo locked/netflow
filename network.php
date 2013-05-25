@@ -1,7 +1,7 @@
 <?php
 header("content-type:text/json");
 
-$m = new MongoClient();
+$m = new MongoClient("mongodb://192.168.0.10:27017");
 $db = $m->selectDB('network');
 $c = new MongoCollection($db, 'flows');
 
