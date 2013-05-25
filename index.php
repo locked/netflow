@@ -77,7 +77,7 @@ var radius = 5;
 var linkDistance = 180;
 var charge = 600;
 
-var data_url = "<?= "network.php?protocol=".$protocol."&start_ts=".$start_ts; ?>";
+var data_url = "<?= "data.php?protocol=".$protocol."&start_ts=".$start_ts; ?>";
 
 var color = d3.scale.category20();
 

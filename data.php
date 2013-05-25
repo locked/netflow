@@ -10,24 +10,40 @@ $cursor = $c->find($q);
 $lns = array();
 $max = 0;
 foreach ($cursor as $doc) {
-	//var_dump($doc);
 	$src = $doc["src"];
 	$dst = $doc["dst"];
 	if( $dst=="default" ) $dst = "outside";
 	if( $src=="default" ) $src = "outside";
-	switch( $_REQUEST["protocol"] ) {
-	case "TCP":
-	case "UDP":
-	case "IP6":
-		$sum = $doc["vals"][$_REQUEST["protocol"]];
-		break;
+	$version = array_key_exists("v", $doc)?$doc["v"]:"0.1";
+	$protocol = array_key_exists("protocol", $_REQUEST)?$_REQUEST["protocol"]:"";
+	switch( $version ) {
+	case "0.2":
+		//print_r($doc);exit;
+		$protocols = array("TCP", "UDP", "IP6");
+		if( in_array($protocol, $protocols) ) {
+			$protocols = array($protocol);
+		}
+		$sum = 0;
+		foreach( $protocols as $p ) {
+			$sum += array_key_exists($p, $doc["vals"])?intval($doc["vals"][$p]):0;
+		}
+	break;
+	case "0.1":
 	default:
-		$sum = $doc["sum"];
+		switch( $protocol ) {
+		case "TCP":
+		case "UDP":
+		case "IP6":
+			$sum = $doc["vals"][$protocol];
+			break;
+		default:
+			$sum = $doc["sum"];
+		}
 	}
 	$hosts[$src] = $src;
 	$hosts[$dst] = $dst;
 	$key = "$src-$dst";
-	if( $lns[$key] ) {
+	if( array_key_exists($key, $lns) ) {
 		$lns[$key][2] += $sum;
 	} else {
 		$lns[$key] = array($src, $dst, $sum);
