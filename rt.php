@@ -42,7 +42,7 @@ var init_done = false;
 
 var uds = ['up', 'down'];
 
-var nodes = ["192.168.0.10", "default"];
+var nodes = ["192.168.0.10", "default", "192.168.0.36"];
 for( n in nodes ) {
 	seriesData.push([]);
 	seriesData.push([]);

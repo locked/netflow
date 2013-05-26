@@ -40,7 +40,6 @@ def handle_websocket():
                 #min_ts = start_ts + interval*2
                 #max_ts = 0
                 for d in docs:
-                    #if d["ts"]>start_ts: start_ts = d["ts"]+1
                     #if d["ts"]>max_ts: max_ts = d["ts"]
                     #if d["ts"]<min_ts: min_ts = d["ts"]
                     ts = int(round((float(d['ts'])/float(interval)))*int(interval));
@@ -55,6 +54,7 @@ def handle_websocket():
                     bynodes[node][ts]['up'][1].append( d['ts'] )
 
                     node = d['dst']
+                    if d['src']=="default" and node=="192.168.0.36": print d
                     down_bytes = d['sum']['TCP'] if 'TCP' in d['sum'] else 0
                     if node not in bynodes: bynodes[node] = {}
                     if ts not in bynodes[node]: bynodes[node][ts] = {}
@@ -76,7 +76,7 @@ def handle_websocket():
                             bynodes[node][ts][ud] = v
 
                 # Send data
-                print bynodes
+                #print bynodes
                 wsock.send(json.dumps(bynodes))
                 time.sleep(interval)
                 start_ts += interval + start_shift
